@@ -26,15 +26,16 @@ public class characterController : MonoBehaviour
     float verticalInput;
     Vector3 moveDirection;
     Rigidbody rb;
+    private Animator playerAnimation;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         readyToJump = true;
+        playerAnimation = GetComponent<Animator>();
     }
 
-    
     void Update()
     {
         playerInput();
@@ -43,15 +44,20 @@ public class characterController : MonoBehaviour
         //grounded check
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
-        //handles drag
+        //handles drag, then handles Animator grounded boolean. Ended up not needing the grounded boolean within animator, but kept the code just in case
         if (grounded)
         {
             rb.drag = groundDrag;
+            //playerAnimation.SetBool("grounded", true);
         }
         else
         {
             rb.drag = 0;
+            //playerAnimation.SetBool("grounded", false);
         }
+
+        Vector3 playerVelocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        playerAnimation.SetFloat("move_speed", playerVelocity.magnitude);
     }
 
     private void FixedUpdate()
@@ -69,6 +75,7 @@ public class characterController : MonoBehaviour
         {
             readyToJump = false;
             jump();
+            playerAnimation.SetTrigger("jump_trigger");
             Invoke(nameof(resetJump), jumpCooldown);
         }
     }
