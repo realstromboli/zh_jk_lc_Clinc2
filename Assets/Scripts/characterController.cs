@@ -12,9 +12,14 @@ public class characterController : MonoBehaviour
     public float jumpCooldown;
     public float airMultiplier;
     bool readyToJump;
+    public float walkSpeed = 7f;
+    public float runSpeed = 12f;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode punchKey = KeyCode.E;
+    public KeyCode crouchKey = KeyCode.LeftControl;
+    public KeyCode runKey = KeyCode.LeftShift;
 
     [Header("Ground Check")]
     public float playerHeight;
@@ -27,6 +32,7 @@ public class characterController : MonoBehaviour
     Vector3 moveDirection;
     Rigidbody rb;
     private Animator playerAnimation;
+    public bool isRunning;
 
     void Start()
     {
@@ -34,12 +40,14 @@ public class characterController : MonoBehaviour
         rb.freezeRotation = true;
         readyToJump = true;
         playerAnimation = GetComponent<Animator>();
+        isRunning = false;
     }
 
     void Update()
     {
         playerInput();
         speedControl();
+        run();
 
         //grounded check
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
@@ -71,12 +79,22 @@ public class characterController : MonoBehaviour
         verticalInput = Input.GetAxisRaw("Vertical");
 
         //handles when player is able to jump
-        if(Input.GetKey(jumpKey) && readyToJump && grounded)
+        if (Input.GetKey(jumpKey) && readyToJump && grounded)
         {
             readyToJump = false;
             jump();
             playerAnimation.SetTrigger("jump_trigger");
             Invoke(nameof(resetJump), jumpCooldown);
+        }
+
+        if (Input.GetKey(punchKey) && grounded)
+        {
+            playerAnimation.SetTrigger("punch_trigger");
+        }
+
+        if (Input.GetKey(crouchKey) && grounded)
+        {
+            playerAnimation.SetTrigger("crouch_trigger");
         }
     }
 
@@ -121,5 +139,26 @@ public class characterController : MonoBehaviour
     private void resetJump()
     {
         readyToJump = true;
+    }
+
+    private void run()
+    {
+        if (Input.GetKey(runKey) && grounded)
+        {
+            isRunning = true;
+        }
+        else
+        {
+            isRunning = false;
+        }
+
+        if (isRunning == true)
+        {
+            moveSpeed = runSpeed;
+        }
+        else
+        {
+            moveSpeed = walkSpeed;
+        }
     }
 }
